@@ -1,0 +1,107 @@
+# =============================================================================
+# MultiQC configuration - Rhizosphere Resistome Pipeline
+# Reads fastp JSON directly. FastQC is not used in this pipeline.
+# =============================================================================
+title: "Rhizosphere Resistome Pipeline - QC Report"
+subtitle: "fastp quality control summary across all metagenome samples"
+intro_text: >
+  Adapter trimming and quality filtering performed with fastp v0.23.4.
+  FastQC was not used - fastp generates equivalent metrics natively
+  including pre- and post-filtering panels in a single pass.
+report_comment: >
+  Samples highlighted in red failed the QC gate and were excluded from
+  assembly and downstream analysis. See qc_fail.txt per sample for
+  the specific threshold that was not met.
+
+# Only run the fastp module. No FastQC, no Trimmomatic, no Cutadapt.
+run_modules:
+  - fastp
+
+# Column selection for the General Statistics table
+table_columns_visible:
+  fastp:
+    pct_duplication: true
+    after_filtering_q30_rate: true
+    after_filtering_gc_content: true
+    pct_adapter: true
+    pct_surviving: true
+    before_filtering_total_reads: true
+    after_filtering_total_reads: true
+
+# Column display configuration
+table_columns_name:
+  fastp:
+    before_filtering_total_reads: "Reads (raw)"
+    after_filtering_total_reads: "Reads (clean)"
+    pct_surviving: "% Kept"
+    after_filtering_q30_rate: "Q30 rate"
+    after_filtering_gc_content: "GC %"
+    pct_duplication: "Dup %"
+    pct_adapter: "Adapter %"
+
+# Colour scales per column
+table_columns_colour:
+  fastp:
+    pct_surviving: "RdYlGn"
+    after_filtering_q30_rate: "RdYlGn"
+    after_filtering_gc_content: "RdBu"
+    pct_duplication: "OrRd"
+
+# fastp-specific plot and section settings
+fastp:
+  # Show sequence quality, GC content, insert size,
+  # adapter content, and filtering stats sections
+  s_name_filenames: true
+
+# Sample name cleanup - strip fastp suffix from display names
+extra_fn_clean_exts:
+  - ".fastp"
+  - "_R1"
+  - "_R2"
+
+# Group samples by site prefix for the heatmap and bar charts.
+# Adjust these patterns to match your actual sample naming convention.
+sample_names_rename_buttons:
+  - "All samples"
+  - "Rhizosphere"
+  - "Bulk soil"
+sample_names_rename:
+  - ["MAIZE_RHZ_", "Rhizosphere - "]
+  - ["MAIZE_BULK_", "Bulk soil - "]
+
+# Highlight QC-failed samples in red across all report sections.
+# The list is written dynamically by the MULTIQC process from qc_fail.txt files.
+highlight_regex:
+  "QC failed":
+    colour: "#e74c3c"
+    file: "failed_samples.txt"
+
+# Custom content: embed the QC gate summary table
+# (pass/fail status + actual metric values per sample)
+custom_data:
+  qc_gate_summary:
+    section_name: "QC Gate Results"
+    description: >
+      Pass/fail decision and actual metric values from the FASTP_QC_GATE
+      process. Samples shown in red failed at least one threshold and
+      were excluded from assembly.
+    plot_type: "table"
+    pconfig:
+      id: "qc_gate_table"
+      title: "QC gate - per-sample results"
+
+# Section ordering in the report
+report_section_order:
+  qc_gate_summary:
+    order: 1000
+  fastp:
+    order: 900
+
+# Suppress sections we don't use
+skip_generalstats: false
+show_analysis_paths: false
+show_analysis_paths_reportkey: false
+
+# Output data directory
+data_dir: "multiqc_data"
+plots_dir: "multiqc_plots"
