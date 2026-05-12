@@ -5,13 +5,16 @@ include { FASTP_QC_WF } from './subworkflows/local/fastp_qc'
 params.input = null
 
 def requireField = { row, names ->
-    for (name in names) {
+    def key = names.find { name ->
         def value = row[name]
-        if (value != null && value.toString().trim()) {
-            return value.toString().trim()
-        }
+        value != null && value.toString().trim()
     }
-    error "Sample sheet is missing required column. Expected one of: ${names.join(', ')}"
+
+    if (!key) {
+        error "Sample sheet is missing required column. Expected one of: ${names.join(', ')}"
+    }
+
+    row[key].toString().trim()
 }
 
 def readList = { value ->
