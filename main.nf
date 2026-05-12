@@ -2,9 +2,7 @@ nextflow.enable.dsl = 2
 
 include { FASTP_QC_WF } from './subworkflows/local/fastp_qc'
 
-params.input = null
-
-def requireField = { row, names ->
+def requireField(row, names) {
     def key = names.find { name ->
         def value = row[name]
         value != null && value.toString().trim()
@@ -17,7 +15,7 @@ def requireField = { row, names ->
     row[key].toString().trim()
 }
 
-def readList = { value ->
+def readList(value) {
     value.toString()
         .split(/[;,]/)
         .collect { it.trim() }
