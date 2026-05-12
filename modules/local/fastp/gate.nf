@@ -3,6 +3,8 @@ nextflow.enable.dsl = 2
 process FASTP_QC_GATE {
     label 'process_single'
 
+    container 'python:3.11-slim'
+
     input:
     tuple val(meta), path(json)
 
