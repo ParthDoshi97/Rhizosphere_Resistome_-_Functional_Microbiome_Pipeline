@@ -13,6 +13,8 @@ param(
     [string]$Entry = "main.nf",
     [string]$AwsProfile = "",
     [string]$AwsCliPath = "",
+    [string]$JobRole = "",
+    [string]$ExecutionRole = "",
     [switch]$Spot,
     [switch]$Fusion,
     [int]$SpotAttempts = -1,
@@ -45,6 +47,14 @@ if ($AwsProfile) {
 
 if ($AwsCliPath) {
     $env:NXF_AWS_CLI_PATH = $AwsCliPath
+}
+
+if ($JobRole) {
+    $env:NXF_AWS_BATCH_JOB_ROLE = $JobRole
+}
+
+if ($ExecutionRole) {
+    $env:NXF_AWS_BATCH_EXECUTION_ROLE = $ExecutionRole
 }
 
 if ($SpotAttempts -lt 0) {

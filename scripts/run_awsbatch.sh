@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
     cat <<'EOF'
 Usage:
-  scripts/run_awsbatch.sh --input samples.csv --queue QUEUE --bucket-dir s3://bucket/prefix [options] [-- extra nextflow args]
+  bash scripts/run_awsbatch.sh --input samples.csv --queue QUEUE --bucket-dir s3://bucket/prefix [options] [-- extra nextflow args]
 
 Options:
   --region REGION          AWS region. Defaults to AWS_REGION, AWS_DEFAULT_REGION, or us-east-1.
@@ -12,6 +12,8 @@ Options:
   --entry FILE             Nextflow entry file. Defaults to main.nf.
   --aws-profile PROFILE    AWS credential profile for the launcher.
   --aws-cli-path PATH      AWS CLI path on the Batch host AMI, if needed.
+  --job-role ROLE          IAM role ARN/name for Batch jobs.
+  --execution-role ROLE    IAM execution role ARN/name for Batch jobs.
   --spot                   Use the awsbatch_spot profile.
   --fusion                 Use Wave + Fusion profiles for S3 access.
   --spot-attempts N        Spot reclaim retry attempts. Defaults to 5 with --spot, otherwise 0.
@@ -28,6 +30,8 @@ OUTDIR=""
 ENTRY="main.nf"
 AWS_PROFILE_ARG=""
 AWS_CLI_PATH=""
+JOB_ROLE=""
+EXECUTION_ROLE=""
 SPOT=0
 FUSION=0
 SPOT_ATTEMPTS=""
@@ -44,6 +48,8 @@ while [[ $# -gt 0 ]]; do
         --entry) ENTRY="$2"; shift 2 ;;
         --aws-profile) AWS_PROFILE_ARG="$2"; shift 2 ;;
         --aws-cli-path) AWS_CLI_PATH="$2"; shift 2 ;;
+        --job-role) JOB_ROLE="$2"; shift 2 ;;
+        --execution-role) EXECUTION_ROLE="$2"; shift 2 ;;
         --spot) SPOT=1; shift ;;
         --fusion) FUSION=1; shift ;;
         --spot-attempts) SPOT_ATTEMPTS="$2"; shift 2 ;;
@@ -83,6 +89,14 @@ fi
 
 if [[ -n "$AWS_CLI_PATH" ]]; then
     export NXF_AWS_CLI_PATH="$AWS_CLI_PATH"
+fi
+
+if [[ -n "$JOB_ROLE" ]]; then
+    export NXF_AWS_BATCH_JOB_ROLE="$JOB_ROLE"
+fi
+
+if [[ -n "$EXECUTION_ROLE" ]]; then
+    export NXF_AWS_BATCH_EXECUTION_ROLE="$EXECUTION_ROLE"
 fi
 
 if [[ -z "$SPOT_ATTEMPTS" ]]; then
