@@ -1,0 +1,9 @@
+# Nextflow logs
+.nextflow.log*
+
+# Nextflow runtime state
+.nextflow/
+work/
+
+# Temporary stage-test outputs
+results/
