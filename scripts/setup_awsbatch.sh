@@ -5,12 +5,14 @@ usage() {
     cat <<'EOF'
 Usage:
   bash scripts/setup_awsbatch.sh --bucket BUCKET [options]
+  bash scripts/setup_awsbatch.sh --bucket-dir s3://bucket/prefix [options]
 
 Creates or reuses the AWS resources needed to run this Nextflow pipeline on
 AWS Batch from a Linux or EC2 launcher instance.
 
 Required:
   --bucket BUCKET              S3 bucket for Nextflow work/results storage.
+  --bucket-dir URI             S3 work directory. Sets --bucket and --work-prefix.
 
 Options:
   --prefix NAME                Resource name prefix. Defaults to rhizo.
@@ -60,6 +62,17 @@ trim() {
     value="${value#"${value%%[![:space:]]*}"}"
     value="${value%"${value##*[![:space:]]}"}"
     printf '%s' "$value"
+}
+
+parse_bucket_dir() {
+    local uri="$1"
+    local without_scheme
+
+    [[ "$uri" =~ ^s3://[^/]+/.+ ]] || die "--bucket-dir must be an S3 path with a bucket and prefix, for example s3://multiomic-project-data/nxf-work"
+
+    without_scheme="${uri#s3://}"
+    BUCKET="${without_scheme%%/*}"
+    WORK_PREFIX="${without_scheme#*/}"
 }
 
 json_array_from_csv() {
@@ -429,6 +442,7 @@ IAM_CHANGED=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --bucket) BUCKET="$2"; shift 2 ;;
+        --bucket-dir) parse_bucket_dir "$2"; shift 2 ;;
         --prefix) PREFIX="$2"; shift 2 ;;
         --region) REGION="$2"; shift 2 ;;
         --aws-profile) AWS_PROFILE_ARG="$2"; shift 2 ;;

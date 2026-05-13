@@ -17,6 +17,22 @@ For Spot Instances, the AWS Batch compute environment backing the queue must be 
 
 Run this once from any Linux or EC2 launcher instance with AWS CLI credentials that can create IAM, S3, EC2, and Batch resources:
 
+For the project AWS Instant defaults, use the no-option setup script:
+
+```bash
+bash scripts/setup_awsbatch_instant.sh
+```
+
+It discovers the account, default VPC, and subnets; recreates the required IAM roles if they were deleted; creates or reuses the `rhizo-spot-ce` Spot compute environment and `rhizo-spot-queue`; uses `s3://multiomic-project-data/nxf-work` as the Nextflow work directory in `ap-south-1`; and writes `.awsbatch.env`.
+
+After setup, run the project sample sheet with the no-option launcher:
+
+```bash
+bash scripts/run_awsbatch_instant.sh
+```
+
+For a custom setup, pass options to the generic setup script:
+
 ```bash
 bash scripts/setup_awsbatch.sh \
   --bucket my-rhizo-batch-bucket \

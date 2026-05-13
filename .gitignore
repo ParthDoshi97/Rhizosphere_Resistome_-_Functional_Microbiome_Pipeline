@@ -7,3 +7,6 @@ work/
 
 # Temporary stage-test outputs
 results/
+
+# Generated AWS Batch launcher environment
+.awsbatch.env
