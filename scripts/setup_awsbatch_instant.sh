@@ -54,6 +54,10 @@ ensure_role() {
 
     if role_exists "$role_name"; then
         log "IAM role exists: $role_name"
+        log "Refreshing trust policy for $role_name"
+        aws_cmd iam update-assume-role-policy \
+            --role-name "$role_name" \
+            --policy-document "$trust_policy" >/dev/null
         return
     fi
 
@@ -138,6 +142,102 @@ resource_name_exists() {
     local found
     found="$(aws_cmd "$service" "$@" --query "$query" --output text 2>/dev/null || true)"
     [[ "$found" == "$expected" ]]
+}
+
+compute_environment_status() {
+    aws_cmd batch describe-compute-environments \
+        --compute-environments "$COMPUTE_ENV_NAME" \
+        --query 'computeEnvironments[0].status' \
+        --output text 2>/dev/null || true
+}
+
+compute_environment_reason() {
+    aws_cmd batch describe-compute-environments \
+        --compute-environments "$COMPUTE_ENV_NAME" \
+        --query 'computeEnvironments[0].statusReason' \
+        --output text 2>/dev/null || true
+}
+
+job_queue_exists() {
+    resource_name_exists batch 'jobQueues[0].jobQueueName' "$QUEUE_NAME" describe-job-queues --job-queues "$QUEUE_NAME"
+}
+
+compute_environment_exists() {
+    resource_name_exists batch 'computeEnvironments[0].computeEnvironmentName' "$COMPUTE_ENV_NAME" describe-compute-environments --compute-environments "$COMPUTE_ENV_NAME"
+}
+
+wait_for_job_queue_deleted() {
+    for _ in $(seq 1 60); do
+        if ! job_queue_exists; then
+            log "Job queue deleted: $QUEUE_NAME"
+            return
+        fi
+        log "Waiting for job queue deletion: $QUEUE_NAME"
+        sleep 5
+    done
+
+    die "Timed out waiting for job queue $QUEUE_NAME to be deleted"
+}
+
+wait_for_compute_environment_deleted() {
+    for _ in $(seq 1 60); do
+        if ! compute_environment_exists; then
+            log "Compute environment deleted: $COMPUTE_ENV_NAME"
+            return
+        fi
+        log "Waiting for compute environment deletion: $COMPUTE_ENV_NAME"
+        sleep 5
+    done
+
+    die "Timed out waiting for compute environment $COMPUTE_ENV_NAME to be deleted"
+}
+
+delete_job_queue_if_exists() {
+    if ! job_queue_exists; then
+        return
+    fi
+
+    log "Deleting project job queue before compute environment repair: $QUEUE_NAME"
+    aws_cmd batch update-job-queue \
+        --job-queue "$QUEUE_NAME" \
+        --state DISABLED >/dev/null || true
+    aws_cmd batch delete-job-queue \
+        --job-queue "$QUEUE_NAME" >/dev/null
+    wait_for_job_queue_deleted
+}
+
+delete_compute_environment_if_exists() {
+    if ! compute_environment_exists; then
+        return
+    fi
+
+    log "Deleting invalid project compute environment: $COMPUTE_ENV_NAME"
+    aws_cmd batch update-compute-environment \
+        --compute-environment "$COMPUTE_ENV_NAME" \
+        --state DISABLED >/dev/null || true
+    aws_cmd batch delete-compute-environment \
+        --compute-environment "$COMPUTE_ENV_NAME" >/dev/null
+    wait_for_compute_environment_deleted
+}
+
+repair_invalid_compute_environment() {
+    local status
+    local reason
+
+    if ! compute_environment_exists; then
+        return
+    fi
+
+    status="$(compute_environment_status)"
+    if [[ "$status" != "INVALID" ]]; then
+        return
+    fi
+
+    reason="$(compute_environment_reason)"
+    log "Compute environment $COMPUTE_ENV_NAME is INVALID: $reason"
+    log "Recreating it so AWS Batch can use the refreshed IAM roles"
+    delete_job_queue_if_exists
+    delete_compute_environment_if_exists
 }
 
 wait_for_compute_environment() {
@@ -343,7 +443,9 @@ cat > "$TMP_DIR/compute-resources.json" <<JSON
 }
 JSON
 
-if resource_name_exists batch 'computeEnvironments[0].computeEnvironmentName' "$COMPUTE_ENV_NAME" describe-compute-environments --compute-environments "$COMPUTE_ENV_NAME"; then
+repair_invalid_compute_environment
+
+if compute_environment_exists; then
     log "Compute environment exists: $COMPUTE_ENV_NAME"
 else
     log "Creating compute environment: $COMPUTE_ENV_NAME"
@@ -356,7 +458,7 @@ else
 fi
 wait_for_compute_environment
 
-if resource_name_exists batch 'jobQueues[0].jobQueueName' "$QUEUE_NAME" describe-job-queues --job-queues "$QUEUE_NAME"; then
+if job_queue_exists; then
     log "Job queue exists: $QUEUE_NAME"
 else
     log "Creating job queue: $QUEUE_NAME"
