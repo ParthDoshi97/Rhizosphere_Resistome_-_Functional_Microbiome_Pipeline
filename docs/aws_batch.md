@@ -31,6 +31,14 @@ After setup, run the project sample sheet with the no-option launcher:
 bash scripts/run_awsbatch_instant.sh
 ```
 
+To save a Seqera token once on the EC2 launcher, run:
+
+```bash
+bash scripts/set_seqera_token.sh
+```
+
+The token is written to `.awsbatch.env`, which is ignored by Git and sourced automatically by `scripts/run_awsbatch_instant.sh`.
+
 For a custom setup, pass options to the generic setup script:
 
 ```bash

@@ -35,6 +35,19 @@ die() {
     exit 1
 }
 
+preserve_env_value() {
+    local name="$1"
+    local value="${!name:-}"
+
+    if [[ -z "$value" && -f "$ENV_FILE" ]]; then
+        value="$(
+            bash -c 'source "$1" >/dev/null 2>&1 || true; eval "printf %s \"\${'"$name"':-}\""' _ "$ENV_FILE"
+        )"
+    fi
+
+    printf '%s' "$value"
+}
+
 aws_cmd() {
     aws --region "$REGION" "$@"
 }
@@ -421,6 +434,8 @@ fi
 
 export AWS_PAGER=""
 IAM_CHANGED=0
+PRESERVED_TOWER_ACCESS_TOKEN="$(preserve_env_value TOWER_ACCESS_TOKEN)"
+PRESERVED_TOWER_API_ENDPOINT="$(preserve_env_value TOWER_API_ENDPOINT)"
 
 log "Using fixed region: $REGION"
 ACCOUNT_ID="$(aws_cmd sts get-caller-identity --query Account --output text)"
@@ -587,6 +602,18 @@ export NXF_AWS_OUTDIR=s3://$BUCKET/$RESULTS_PREFIX
 export NXF_AWS_BATCH_JOB_ROLE=$JOB_ROLE_ARN
 export NXF_AWS_BATCH_MAX_SPOT_ATTEMPTS=5
 EOF
+
+if [[ -n "$PRESERVED_TOWER_ACCESS_TOKEN" ]]; then
+    cat >> "$ENV_FILE" <<EOF
+export TOWER_ACCESS_TOKEN='$PRESERVED_TOWER_ACCESS_TOKEN'
+EOF
+fi
+
+if [[ -n "$PRESERVED_TOWER_API_ENDPOINT" ]]; then
+    cat >> "$ENV_FILE" <<EOF
+export TOWER_API_ENDPOINT='$PRESERVED_TOWER_API_ENDPOINT'
+EOF
+fi
 
 cat <<EOF
 
