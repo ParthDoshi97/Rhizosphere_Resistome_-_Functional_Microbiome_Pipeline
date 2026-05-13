@@ -151,10 +151,31 @@ compute_environment_status() {
         --output text 2>/dev/null || true
 }
 
+compute_environment_state() {
+    aws_cmd batch describe-compute-environments \
+        --compute-environments "$COMPUTE_ENV_NAME" \
+        --query 'computeEnvironments[0].state' \
+        --output text 2>/dev/null || true
+}
+
 compute_environment_reason() {
     aws_cmd batch describe-compute-environments \
         --compute-environments "$COMPUTE_ENV_NAME" \
         --query 'computeEnvironments[0].statusReason' \
+        --output text 2>/dev/null || true
+}
+
+job_queue_status() {
+    aws_cmd batch describe-job-queues \
+        --job-queues "$QUEUE_NAME" \
+        --query 'jobQueues[0].status' \
+        --output text 2>/dev/null || true
+}
+
+job_queue_state() {
+    aws_cmd batch describe-job-queues \
+        --job-queues "$QUEUE_NAME" \
+        --query 'jobQueues[0].state' \
         --output text 2>/dev/null || true
 }
 
@@ -192,7 +213,57 @@ wait_for_compute_environment_deleted() {
     die "Timed out waiting for compute environment $COMPUTE_ENV_NAME to be deleted"
 }
 
+wait_for_job_queue_disabled() {
+    local status
+    local state
+
+    for _ in $(seq 1 60); do
+        if ! job_queue_exists; then
+            return
+        fi
+
+        status="$(job_queue_status)"
+        state="$(job_queue_state)"
+
+        if [[ "$state" == "DISABLED" && "$status" != "UPDATING" ]]; then
+            log "Job queue is disabled: $QUEUE_NAME"
+            return
+        fi
+
+        log "Waiting for job queue to finish disabling: $QUEUE_NAME (state: $state, status: $status)"
+        sleep 5
+    done
+
+    die "Timed out waiting for job queue $QUEUE_NAME to disable"
+}
+
+wait_for_compute_environment_disabled() {
+    local status
+    local state
+
+    for _ in $(seq 1 60); do
+        if ! compute_environment_exists; then
+            return
+        fi
+
+        status="$(compute_environment_status)"
+        state="$(compute_environment_state)"
+
+        if [[ "$state" == "DISABLED" && "$status" != "UPDATING" ]]; then
+            log "Compute environment is disabled: $COMPUTE_ENV_NAME"
+            return
+        fi
+
+        log "Waiting for compute environment to finish disabling: $COMPUTE_ENV_NAME (state: $state, status: $status)"
+        sleep 5
+    done
+
+    die "Timed out waiting for compute environment $COMPUTE_ENV_NAME to disable"
+}
+
 delete_job_queue_if_exists() {
+    local error_file
+
     if ! job_queue_exists; then
         return
     fi
@@ -201,12 +272,31 @@ delete_job_queue_if_exists() {
     aws_cmd batch update-job-queue \
         --job-queue "$QUEUE_NAME" \
         --state DISABLED >/dev/null || true
-    aws_cmd batch delete-job-queue \
-        --job-queue "$QUEUE_NAME" >/dev/null
-    wait_for_job_queue_deleted
+
+    wait_for_job_queue_disabled
+
+    error_file="$TMP_DIR/delete-job-queue.err"
+    for _ in $(seq 1 60); do
+        if aws_cmd batch delete-job-queue --job-queue "$QUEUE_NAME" >/dev/null 2>"$error_file"; then
+            wait_for_job_queue_deleted
+            return
+        fi
+
+        if ! job_queue_exists; then
+            log "Job queue deleted: $QUEUE_NAME"
+            return
+        fi
+
+        log "Job queue delete is not ready yet: $(tr '\n' ' ' < "$error_file")"
+        sleep 10
+    done
+
+    die "Timed out deleting job queue $QUEUE_NAME"
 }
 
 delete_compute_environment_if_exists() {
+    local error_file
+
     if ! compute_environment_exists; then
         return
     fi
@@ -215,9 +305,26 @@ delete_compute_environment_if_exists() {
     aws_cmd batch update-compute-environment \
         --compute-environment "$COMPUTE_ENV_NAME" \
         --state DISABLED >/dev/null || true
-    aws_cmd batch delete-compute-environment \
-        --compute-environment "$COMPUTE_ENV_NAME" >/dev/null
-    wait_for_compute_environment_deleted
+
+    wait_for_compute_environment_disabled
+
+    error_file="$TMP_DIR/delete-compute-environment.err"
+    for _ in $(seq 1 60); do
+        if aws_cmd batch delete-compute-environment --compute-environment "$COMPUTE_ENV_NAME" >/dev/null 2>"$error_file"; then
+            wait_for_compute_environment_deleted
+            return
+        fi
+
+        if ! compute_environment_exists; then
+            log "Compute environment deleted: $COMPUTE_ENV_NAME"
+            return
+        fi
+
+        log "Compute environment delete is not ready yet: $(tr '\n' ' ' < "$error_file")"
+        sleep 10
+    done
+
+    die "Timed out deleting compute environment $COMPUTE_ENV_NAME"
 }
 
 repair_invalid_compute_environment() {
