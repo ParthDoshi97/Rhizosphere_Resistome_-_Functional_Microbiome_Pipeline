@@ -1,6 +1,7 @@
 nextflow.enable.dsl = 2
 
 include { FASTP_QC_WF } from './subworkflows/local/fastp_qc'
+include { ASSEMBLY_WF } from './subworkflows/local/assembly'
 
 def requireField(row, names) {
     def key = names.find { name ->
@@ -50,4 +51,12 @@ workflow {
         .set { ch_raw_reads }
 
     FASTP_QC_WF(ch_raw_reads)
+
+    FASTP_QC_WF.out.reads_pass
+        .map { meta, reads_r1, reads_r2, json, report ->
+            tuple(meta, reads_r1, reads_r2)
+        }
+        .set { ch_qc_pass_reads }
+
+    ASSEMBLY_WF(ch_qc_pass_reads)
 }
