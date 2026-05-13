@@ -39,4 +39,5 @@ exec bash "$SCRIPT_DIR/run_awsbatch.sh" \
     --outdir "$OUTDIR" \
     --job-role "$JOB_ROLE" \
     --spot \
+    --fusion \
     "$@"
