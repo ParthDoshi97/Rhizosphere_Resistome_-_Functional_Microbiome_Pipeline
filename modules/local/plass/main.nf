@@ -3,7 +3,7 @@ nextflow.enable.dsl = 2
 process PLASS {
     label 'process_high_memory'
 
-    container 'quay.io/biocontainers/plass:5.cf8933301-2'
+    container 'quay.io/biocontainers/plass:5.cf8933--hd6d6fdc_3'
 
     publishDir [
         path: "${params.outdir}/assembly/plass",
