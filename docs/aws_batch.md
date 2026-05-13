@@ -31,13 +31,14 @@ After setup, run the project sample sheet with the no-option launcher:
 bash scripts/run_awsbatch_instant.sh
 ```
 
-To save a Seqera token once on the EC2 launcher, run:
+To save a Seqera token once on the EC2 launcher, append it to the ignored `.awsbatch.env` file:
 
 ```bash
-bash scripts/set_seqera_token.sh
+read -rsp "Seqera token: " TOWER_ACCESS_TOKEN
+printf "\nexport TOWER_ACCESS_TOKEN='%s'\n" "$TOWER_ACCESS_TOKEN" >> .awsbatch.env
 ```
 
-The token is written to `.awsbatch.env`, which is ignored by Git and sourced automatically by `scripts/run_awsbatch_instant.sh`.
+The file is sourced automatically by `scripts/run_awsbatch_instant.sh`. If `scripts/setup_awsbatch_instant.sh` rewrites `.awsbatch.env`, it preserves existing `TOWER_ACCESS_TOKEN` and `TOWER_API_ENDPOINT` values.
 
 For a custom setup, pass options to the generic setup script:
 
