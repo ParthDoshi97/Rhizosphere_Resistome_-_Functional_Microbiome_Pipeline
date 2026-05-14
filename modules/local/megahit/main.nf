@@ -5,16 +5,12 @@ process MEGAHIT {
 
     container 'quay.io/biocontainers/megahit:1.2.9--h5b5514e_3'
 
-    publishDir [
-        path: "${params.outdir}/assembly/megahit",
+    publishDir path: "${params.outdir}/assembly/megahit",
         mode: 'copy',
         pattern: "*.contigs.fa"
-    ],
-    [
-        path: "${params.outdir}/assembly/megahit/logs",
+    publishDir path: "${params.outdir}/assembly/megahit/logs",
         mode: 'copy',
         pattern: "*.megahit.log"
-    ]
 
     input:
     tuple val(meta), path(reads_r1), path(reads_r2)

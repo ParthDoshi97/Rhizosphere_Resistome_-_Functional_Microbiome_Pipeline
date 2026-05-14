@@ -5,16 +5,12 @@ process PLASS {
 
     container 'quay.io/biocontainers/plass:5.cf8933--hd6d6fdc_3'
 
-    publishDir [
-        path: "${params.outdir}/assembly/plass",
+    publishDir path: "${params.outdir}/assembly/plass",
         mode: 'copy',
         pattern: "*.plass_proteins.faa"
-    ],
-    [
-        path: "${params.outdir}/assembly/plass/logs",
+    publishDir path: "${params.outdir}/assembly/plass/logs",
         mode: 'copy',
         pattern: "*.plass.log"
-    ]
 
     input:
     tuple val(meta), path(reads_r1), path(reads_r2)
