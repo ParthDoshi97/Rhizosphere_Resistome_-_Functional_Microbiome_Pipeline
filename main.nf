@@ -2,6 +2,7 @@ nextflow.enable.dsl = 2
 
 include { FASTP_QC_WF } from './subworkflows/local/fastp_qc'
 include { ASSEMBLY_WF } from './subworkflows/local/assembly'
+include { COVERM_WF   } from './subworkflows/local/coverm'
 
 def requireField(row, names) {
     def key = names.find { name ->
@@ -59,4 +60,13 @@ workflow {
         .set { ch_qc_pass_reads }
 
     ASSEMBLY_WF(ch_qc_pass_reads)
+
+    ASSEMBLY_WF.out.contigs_pass
+        .join(ch_qc_pass_reads, by: 0)
+        .map { meta, contigs, reads_r1, reads_r2 ->
+            tuple(meta, contigs, reads_r1, reads_r2)
+        }
+        .set { ch_coverm_input }
+
+    COVERM_WF(ch_coverm_input)
 }
