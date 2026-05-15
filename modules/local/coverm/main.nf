@@ -29,7 +29,7 @@ process COVERM_CONTIG {
     tuple val(meta), path("${meta.id}_coverage.tsv"),          emit: coverage
     tuple val(meta), path("${meta.id}_bam/${meta.id}.bam"),     emit: bam
     tuple val(meta), path("${meta.id}_bam/${meta.id}.bam.bai"), emit: bai
-    tuple val(meta), path("${meta.id}.coverm.log"),             emit: log
+    tuple val(meta), path("${meta.id}.coverm.log"),             emit: coverm_log
     path "versions.yml",                                        emit: versions
 
     script:

@@ -28,7 +28,7 @@ workflow COVERM_WF {
     coverage_per_sample = COVERM_CONTIG.out.coverage
     bam                 = COVERM_CONTIG.out.bam
     bai                 = COVERM_CONTIG.out.bai
-    log                 = COVERM_CONTIG.out.log
+    coverm_log          = COVERM_CONTIG.out.coverm_log
     merged_coverage     = COVERM_BATCH_MERGE.out.merged_coverage
     batch_bams          = ch_batch_bam
     batch_bais          = ch_batch_bai
