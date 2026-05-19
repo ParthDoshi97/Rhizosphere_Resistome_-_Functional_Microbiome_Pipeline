@@ -8,5 +8,9 @@ work/
 # Temporary stage-test outputs
 results/
 
+# Downloaded SRA/FASTQ data
+data/sra_downloads/
+**/.sracha_accessions_from_sample_sheet.txt
+
 # Generated AWS Batch launcher environment
 .awsbatch.env

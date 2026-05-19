@@ -15,3 +15,5 @@ nextflow run main.nf --input samples.csv
 ```
 
 AWS Batch, S3 work storage, Spot queues, and resume launchers are documented in `docs/aws_batch.md`.
+
+SRA/BioProject download helpers using `sracha` are documented in `docs/data_download.md`.
