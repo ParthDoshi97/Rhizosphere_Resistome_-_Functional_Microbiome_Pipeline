@@ -128,6 +128,25 @@ BioProject accessions. If your `id` column contains custom names like
 `MAIZE_RHZ_1`, add a real accession column and pass it with
 `--accession-column`.
 
+The repository test sheet at `test_data/sample_sheet.csv` already points to S3
+FASTQ files in `reads_r1` and `reads_r2`. Its `id` column contains custom sample
+names, not SRA run accessions. The only downloadable accession-like value in
+that sheet is the repeated BioProject value in `batch`:
+
+```bash
+bash scripts/download_sra_sracha.sh \
+  --sample-sheet test_data/sample_sheet.csv \
+  --accession-column batch \
+  --output-dir data/PRJNA647806/reads \
+  --prefer-ena \
+  --folder-per-accession \
+  --dry-run
+```
+
+Because `batch` is `PRJNA647806`, this resolves the whole BioProject. To
+download only specific runs, add a real per-sample run column such as
+`run_accession` to the sheet.
+
 ## Download From an Accession List
 
 ```bash

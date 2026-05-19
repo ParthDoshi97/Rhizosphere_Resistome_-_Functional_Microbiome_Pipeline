@@ -142,13 +142,49 @@ candidates = [
     "drr",
     "bioproject",
     "study",
+    "batch",
+    "project",
     "id",
     "sample_id",
     "sample",
 ]
 
+pattern = re.compile(r"^(SRR|ERR|DRR|SRP|ERP|DRP|PRJNA|PRJEB|PRJDB)\d+$")
+
 def norm(value):
     return value.strip().lower().replace("-", "_").replace(" ", "_")
+
+def split_values(raw):
+    raw = (raw or "").strip()
+    if not raw or raw.startswith("#"):
+        return []
+    values = []
+    for item in re.split(r"[,\s;]+", raw):
+        item = item.strip().strip("'\"")
+        if item and not item.startswith("#"):
+            values.append(item)
+    return values
+
+def values_from_column(rows, column):
+    values = []
+    seen = set()
+    for row in rows:
+        for item in split_values(row.get(column)):
+            if item not in seen:
+                seen.add(item)
+                values.append(item)
+    return values
+
+def sra_like(values):
+    return bool(values) and all(pattern.match(value) for value in values)
+
+def accession_column_suggestions(rows, fieldnames):
+    suggestions = []
+    for field in fieldnames:
+        values = values_from_column(rows, field)
+        if sra_like(values):
+            suggestions.append((field, values))
+    return suggestions
 
 with open(sample_sheet, newline="") as handle:
     sample = handle.read(4096)
@@ -163,6 +199,7 @@ with open(sample_sheet, newline="") as handle:
     if not reader.fieldnames:
         raise SystemExit(f"ERROR: sample sheet has no header: {sample_sheet}")
 
+    rows = list(reader)
     fields_by_norm = {norm(field): field for field in reader.fieldnames if field}
     if requested_column:
         selected = fields_by_norm.get(norm(requested_column))
@@ -173,40 +210,44 @@ with open(sample_sheet, newline="") as handle:
                 f"Available columns: {available}"
             )
     else:
-        selected = next((fields_by_norm[name] for name in candidates if name in fields_by_norm), None)
+        selected = None
+        for name in candidates:
+            column = fields_by_norm.get(name)
+            if column and sra_like(values_from_column(rows, column)):
+                selected = column
+                break
         if selected is None:
-            available = ", ".join(reader.fieldnames)
-            raise SystemExit(
-                "ERROR: could not auto-detect an accession column. "
-                f"Use --accession-column. Available columns: {available}"
-            )
+            suggestions = accession_column_suggestions(rows, reader.fieldnames)
+            if suggestions:
+                selected = suggestions[0][0]
+            else:
+                available = ", ".join(reader.fieldnames)
+                raise SystemExit(
+                    "ERROR: could not auto-detect an accession column with SRA-like values. "
+                    f"Use --accession-column. Available columns: {available}"
+                )
 
-    values = []
-    seen = set()
-    for row in reader:
-        raw = (row.get(selected) or "").strip()
-        if not raw or raw.startswith("#"):
-            continue
-        for item in re.split(r"[,\s;]+", raw):
-            item = item.strip().strip("'\"")
-            if not item or item.startswith("#"):
-                continue
-            if item not in seen:
-                seen.add(item)
-                values.append(item)
+    values = values_from_column(rows, selected)
+    if not values:
+        raise SystemExit(f"ERROR: no accessions found in column {selected!r}")
 
-if not values:
-    raise SystemExit(f"ERROR: no accessions found in column {selected!r}")
-
-pattern = re.compile(r"^(SRR|ERR|DRR|SRP|ERP|DRP|PRJNA|PRJEB|PRJDB)\d+$")
-bad = [value for value in values if not pattern.match(value)]
-if bad and not allow_non_sra:
-    preview = ", ".join(bad[:5])
-    raise SystemExit(
-        "ERROR: extracted IDs do not look like SRA run/study/BioProject accessions: "
-        f"{preview}. Use --accession-column to choose the real accession column, "
-        "or --allow-non-sra-ids if you really want to pass these values to sracha."
-    )
+    bad = [value for value in values if not pattern.match(value)]
+    if bad and not allow_non_sra:
+        suggestions = accession_column_suggestions(rows, reader.fieldnames)
+        suggestion_text = ""
+        if suggestions:
+            suggestion_bits = []
+            for column, column_values in suggestions[:3]:
+                suggestion_bits.append(f"{column} ({', '.join(column_values[:3])})")
+            suggestion_text = " SRA-like values were found in: " + "; ".join(suggestion_bits) + "."
+        available = ", ".join(reader.fieldnames)
+        raise SystemExit(
+            "ERROR: extracted IDs do not look like SRA run/study/BioProject accessions: "
+            f"{', '.join(bad[:5])}.{suggestion_text} "
+            "Use --accession-column to choose the real accession column, "
+            "or --allow-non-sra-ids if you really want to pass these values to sracha. "
+            f"Available columns: {available}"
+        )
 
 with open(output_file, "w", newline="\n") as out:
     for value in values:
@@ -236,12 +277,17 @@ extract_accessions_with_awk() {
             gsub(/^[ \t\r\n"\047]+|[ \t\r\n"\047]+$/, "", value)
             return value
         }
+        function is_sra_like(value) {
+            return value ~ /^(SRR|ERR|DRR|SRP|ERP|DRP|PRJNA|PRJEB|PRJDB)[0-9]+$/
+        }
         BEGIN {
-            candidate_count = split("accession run_accession run sra_accession sra srr err drr bioproject study id sample_id sample", candidates, " ")
+            candidate_count = split("accession run_accession run sra_accession sra srr err drr bioproject study batch project id sample_id sample", candidates, " ")
         }
         NR == 1 {
+            NF_header = NF
             for (i = 1; i <= NF; i++) {
                 header[norm($i)] = i
+                original[i] = $i
             }
             if (requested != "") {
                 col = header[norm(requested)]
@@ -249,11 +295,56 @@ extract_accessions_with_awk() {
                     print "ERROR: requested accession column not found: " requested > "/dev/stderr"
                     exit 2
                 }
-            } else {
-                for (i = 1; i <= candidate_count; i++) {
-                    if (header[candidates[i]]) {
-                        col = header[candidates[i]]
-                        break
+            }
+            next
+        }
+        NR > 1 {
+            for (field_idx = 1; field_idx <= NF; field_idx++) {
+                n_field = split($field_idx, field_parts, /[,; \t]+/)
+                for (j = 1; j <= n_field; j++) {
+                    candidate_value = clean(field_parts[j])
+                    if (candidate_value == "" || candidate_value ~ /^#/) {
+                        continue
+                    }
+                    if (is_sra_like(candidate_value)) {
+                        sra_count[field_idx]++
+                    } else {
+                        bad_count_by_col[field_idx]++
+                    }
+                }
+            }
+            rows[NR] = $0
+            max_nr = NR
+            next
+        }
+        END {
+            if (!col) {
+                if (requested != "") {
+                    col = header[norm(requested)]
+                } else {
+                    for (i = 1; i <= candidate_count; i++) {
+                        candidate_col = header[candidates[i]]
+                        if (candidate_col && sra_count[candidate_col] > 0 && bad_count_by_col[candidate_col] == 0) {
+                            col = candidate_col
+                            break
+                        }
+                    }
+                    if (!col) {
+                        for (i = 1; i <= NF_header; i++) {
+                            if (sra_count[i] > 0 && bad_count_by_col[i] == 0) {
+                                col = i
+                                break
+                            }
+                        }
+                    }
+                    if (!col) {
+                        for (i = 1; i <= candidate_count; i++) {
+                            candidate_col = header[candidates[i]]
+                            if (candidate_col) {
+                                col = candidate_col
+                                break
+                            }
+                        }
                     }
                 }
                 if (!col) {
@@ -261,33 +352,40 @@ extract_accessions_with_awk() {
                     exit 2
                 }
             }
-            next
-        }
-        {
-            n = split($col, parts, /[,; \t]+/)
-            for (i = 1; i <= n; i++) {
-                value = clean(parts[i])
-                if (value == "" || value ~ /^#/) {
-                    continue
-                }
-                if (!seen[value]++) {
-                    values[++count] = value
+
+            for (row_nr = 2; row_nr <= max_nr; row_nr++) {
+                split(rows[row_nr], row_fields, FS)
+                n = split(row_fields[col], parts, /[,; \t]+/)
+                for (i = 1; i <= n; i++) {
+                    value = clean(parts[i])
+                    if (value == "" || value ~ /^#/) {
+                        continue
+                    }
+                    if (!seen[value]++) {
+                        values[++count] = value
+                    }
                 }
             }
-        }
-        END {
+
             if (count == 0) {
                 print "ERROR: no accessions found in selected column" > "/dev/stderr"
                 exit 2
             }
             bad_count = 0
             for (i = 1; i <= count; i++) {
-                if (values[i] !~ /^(SRR|ERR|DRR|SRP|ERP|DRP|PRJNA|PRJEB|PRJDB)[0-9]+$/) {
+                if (!is_sra_like(values[i])) {
                     bad[++bad_count] = values[i]
                 }
             }
             if (bad_count && allow_non_sra != "1") {
-                print "ERROR: extracted IDs do not look like SRA accessions: " bad[1] > "/dev/stderr"
+                message = "ERROR: extracted IDs do not look like SRA accessions: " bad[1] "."
+                for (i = 1; i <= NF_header; i++) {
+                    if (sra_count[i] > 0 && bad_count_by_col[i] == 0) {
+                        message = message " Try --accession-column " original[i] "."
+                        break
+                    }
+                }
+                print message > "/dev/stderr"
                 print "Use --accession-column to choose the real accession column, or --allow-non-sra-ids." > "/dev/stderr"
                 exit 2
             }
