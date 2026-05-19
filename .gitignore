@@ -10,6 +10,7 @@ results/
 
 # Downloaded SRA/FASTQ data
 data/sra_downloads/
+data/*/reads/
 **/.sracha_accessions_from_sample_sheet.txt
 
 # Generated AWS Batch launcher environment
