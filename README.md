@@ -14,6 +14,8 @@ Run locally or on AWS Batch from the top-level `main.nf` with a CSV sample sheet
 nextflow run main.nf --input samples.csv
 ```
 
+WSL S3 storage runs are documented in `docs/wsl_s3.md`.
+
 AWS Batch, S3 work storage, Spot queues, and resume launchers are documented in `docs/aws_batch.md`.
 
 SRA/BioProject download helpers using `sracha` are documented in `docs/data_download.md`.

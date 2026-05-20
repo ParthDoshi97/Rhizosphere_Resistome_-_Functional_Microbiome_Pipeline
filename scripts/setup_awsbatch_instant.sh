@@ -6,10 +6,10 @@ set -euo pipefail
 #   bash scripts/setup_awsbatch_instant.sh
 
 REGION="ap-south-1"
-BUCKET="multiomic-project-data"
-WORK_PREFIX="nxf-work"
-RESULTS_PREFIX="data/PRJNA647806/results"
-SAMPLE_SHEET="s3://${BUCKET}/data/PRJNA647806/sample_sheet.csv"
+BUCKET="nf-pipeline-data"
+WORK_PREFIX="Data/nxf-work"
+RESULTS_PREFIX="Data/results"
+SAMPLE_SHEET="s3://${BUCKET}/Data/sample_sheet.csv"
 
 QUEUE_NAME="rhizo-spot-queue"
 COMPUTE_ENV_NAME="rhizo-spot-ce"
@@ -599,6 +599,7 @@ export NXF_AWS_BATCH_QUEUE=$QUEUE_NAME
 export NXF_AWS_SPOT_QUEUE=$QUEUE_NAME
 export NXF_AWS_WORKDIR=s3://$BUCKET/$WORK_PREFIX
 export NXF_AWS_OUTDIR=s3://$BUCKET/$RESULTS_PREFIX
+export NXF_AWS_INPUT=$SAMPLE_SHEET
 export NXF_AWS_BATCH_JOB_ROLE=$JOB_ROLE_ARN
 export NXF_AWS_BATCH_MAX_SPOT_ATTEMPTS=5
 EOF

@@ -174,7 +174,7 @@ bash scripts/download_sra_sracha.sh \
   --sample-sheet samples.csv \
   --accession-column run_accession \
   --output-dir data/PRJNA647806/reads \
-  --s3-prefix s3://multiomic-project-data/data/PRJNA647806/reads \
+  --s3-prefix s3://nf-pipeline-data/Data/reads \
   --write-sample-sheet data/PRJNA647806/sample_sheet.csv \
   --sample-batch PRJNA647806
 ```
@@ -183,7 +183,7 @@ Upload the generated sample sheet:
 
 ```bash
 aws s3 cp data/PRJNA647806/sample_sheet.csv \
-  s3://multiomic-project-data/data/PRJNA647806/sample_sheet.csv
+  s3://nf-pipeline-data/Data/sample_sheet.csv
 ```
 
 ## Useful Options

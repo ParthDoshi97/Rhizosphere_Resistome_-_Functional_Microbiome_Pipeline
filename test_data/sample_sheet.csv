@@ -1,5 +1,5 @@
 id,reads_r1,reads_r2,site,timepoint,replicate,batch,exp_depth
-MAIZE_RHZ_1,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_RHZ_1/MAIZE_RHZ_1_R1.fastq.gz,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_RHZ_1/MAIZE_RHZ_1_R2.fastq.gz,rhizosphere,T0,1,PRJNA647806,0
-MAIZE_RHZ_2,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_RHZ_2/MAIZE_RHZ_2_R1.fastq.gz,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_RHZ_2/MAIZE_RHZ_2_R2.fastq.gz,rhizosphere,T0,2,PRJNA647806,0
-MAIZE_BULK_1,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_BULK_1/MAIZE_BULK_1_R1.fastq.gz,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_BULK_1/MAIZE_BULK_1_R2.fastq.gz,bulk_soil,T0,1,PRJNA647806,0
-MAIZE_BULK_2,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_BULK_2/MAIZE_BULK_2_R1.fastq.gz,s3://multiomic-project-data/data/PRJNA647806/reads/MAIZE_BULK_2/MAIZE_BULK_2_R2.fastq.gz,bulk_soil,T0,2,PRJNA647806,0
+MAIZE_RHZ_1,s3://nf-pipeline-data/Data/reads/MAIZE_RHZ_1/MAIZE_RHZ_1_R1.fastq.gz,s3://nf-pipeline-data/Data/reads/MAIZE_RHZ_1/MAIZE_RHZ_1_R2.fastq.gz,rhizosphere,T0,1,PRJNA647806,0
+MAIZE_RHZ_2,s3://nf-pipeline-data/Data/reads/MAIZE_RHZ_2/MAIZE_RHZ_2_R1.fastq.gz,s3://nf-pipeline-data/Data/reads/MAIZE_RHZ_2/MAIZE_RHZ_2_R2.fastq.gz,rhizosphere,T0,2,PRJNA647806,0
+MAIZE_BULK_1,s3://nf-pipeline-data/Data/reads/MAIZE_BULK_1/MAIZE_BULK_1_R1.fastq.gz,s3://nf-pipeline-data/Data/reads/MAIZE_BULK_1/MAIZE_BULK_1_R2.fastq.gz,bulk_soil,T0,1,PRJNA647806,0
+MAIZE_BULK_2,s3://nf-pipeline-data/Data/reads/MAIZE_BULK_2/MAIZE_BULK_2_R1.fastq.gz,s3://nf-pipeline-data/Data/reads/MAIZE_BULK_2/MAIZE_BULK_2_R2.fastq.gz,bulk_soil,T0,2,PRJNA647806,0

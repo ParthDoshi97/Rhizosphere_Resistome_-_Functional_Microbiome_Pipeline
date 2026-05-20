@@ -68,7 +68,7 @@ parse_bucket_dir() {
     local uri="$1"
     local without_scheme
 
-    [[ "$uri" =~ ^s3://[^/]+/.+ ]] || die "--bucket-dir must be an S3 path with a bucket and prefix, for example s3://multiomic-project-data/nxf-work"
+    [[ "$uri" =~ ^s3://[^/]+/.+ ]] || die "--bucket-dir must be an S3 path with a bucket and prefix, for example s3://nf-pipeline-data/Data/nxf-work"
 
     without_scheme="${uri#s3://}"
     BUCKET="${without_scheme%%/*}"
