@@ -28,7 +28,7 @@ usage() {
         "" \
         "  bash scripts/download_sra_sracha.sh --accession-list SRR_Acc_List.txt \\" \
         "    --output-dir data/PRJNA647806/reads \\" \
-        "    --s3-prefix s3://nf-pipeline-data/Data/reads \\" \
+        "    --s3-prefix s3://nf-pipeline-data/Data/PRJNA647806/reads \\" \
         "    --write-sample-sheet data/PRJNA647806/sample_sheet.csv" \
         "" \
         "Options:" \

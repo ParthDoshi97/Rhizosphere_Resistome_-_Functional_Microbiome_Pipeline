@@ -16,9 +16,9 @@ fi
 
 REGION="${AWS_REGION:-ap-south-1}"
 QUEUE="${NXF_AWS_BATCH_QUEUE:-rhizo-spot-queue}"
-BUCKET_DIR="${NXF_AWS_WORKDIR:-s3://nf-pipeline-data/Data/nxf-work}"
-OUTDIR="${NXF_AWS_OUTDIR:-s3://nf-pipeline-data/Data/results}"
-INPUT="${NXF_AWS_INPUT:-s3://nf-pipeline-data/Data/sample_sheet.csv}"
+BUCKET_DIR="${NXF_AWS_WORKDIR:-s3://nf-pipeline-data/Data/PRJNA647806/nxf-work}"
+OUTDIR="${NXF_AWS_OUTDIR:-s3://nf-pipeline-data/Data/PRJNA647806/results}"
+INPUT="${NXF_AWS_INPUT:-s3://nf-pipeline-data/Data/PRJNA647806/sample_sheet.csv}"
 JOB_ROLE="${NXF_AWS_BATCH_JOB_ROLE:-}"
 
 if [[ -z "$JOB_ROLE" ]]; then

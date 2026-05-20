@@ -39,8 +39,8 @@ may point to S3 FASTQ files.
 
 ```bash
 bash scripts/run_local_wsl_s3.sh \
-  --input s3://nf-pipeline-data/Data/sample_sheet.csv \
-  --outdir s3://nf-pipeline-data/Data/results \
+  --input s3://nf-pipeline-data/Data/PRJNA647806/sample_sheet.csv \
+  --outdir s3://nf-pipeline-data/Data/PRJNA647806/results \
   --workdir /tmp/nxf-work \
   --region ap-south-1
 ```

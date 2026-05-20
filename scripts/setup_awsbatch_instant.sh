@@ -7,9 +7,9 @@ set -euo pipefail
 
 REGION="ap-south-1"
 BUCKET="nf-pipeline-data"
-WORK_PREFIX="Data/nxf-work"
-RESULTS_PREFIX="Data/results"
-SAMPLE_SHEET="s3://${BUCKET}/Data/sample_sheet.csv"
+WORK_PREFIX="Data/PRJNA647806/nxf-work"
+RESULTS_PREFIX="Data/PRJNA647806/results"
+SAMPLE_SHEET="s3://${BUCKET}/Data/PRJNA647806/sample_sheet.csv"
 
 QUEUE_NAME="rhizo-spot-queue"
 COMPUTE_ENV_NAME="rhizo-spot-ce"

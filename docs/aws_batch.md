@@ -23,7 +23,7 @@ For the project AWS Instant defaults, use the no-option setup script:
 bash scripts/setup_awsbatch_instant.sh
 ```
 
-It discovers the account, default VPC, and subnets; recreates the required IAM roles if they were deleted; creates or reuses the `rhizo-spot-ce` Spot compute environment and `rhizo-spot-queue`; uses `s3://nf-pipeline-data/Data/nxf-work` as the Nextflow work directory in `ap-south-1`; and writes `.awsbatch.env`.
+It discovers the account, default VPC, and subnets; recreates the required IAM roles if they were deleted; creates or reuses the `rhizo-spot-ce` Spot compute environment and `rhizo-spot-queue`; uses `s3://nf-pipeline-data/Data/PRJNA647806/nxf-work` as the Nextflow work directory in `ap-south-1`; and writes `.awsbatch.env`.
 
 After setup, run the project sample sheet with the no-option launcher:
 
