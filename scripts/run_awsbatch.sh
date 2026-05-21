@@ -118,6 +118,16 @@ else
     PROFILE="awsbatch"
 fi
 
+if [[ "$FUSION" -eq 1 && -z "${TOWER_ACCESS_TOKEN:-}" ]]; then
+    cat >&2 <<'EOF'
+ERROR: --fusion requires a Seqera access token.
+
+Set TOWER_ACCESS_TOKEN before launching, or rerun without --fusion.
+For shared Seqera workspaces, also set TOWER_WORKSPACE_ID.
+EOF
+    exit 1
+fi
+
 CMD=(nextflow run "$ENTRY" -profile "$PROFILE" -bucket-dir "$BUCKET_DIR")
 if [[ "$RESUME" -eq 1 ]]; then
     CMD+=(-resume)

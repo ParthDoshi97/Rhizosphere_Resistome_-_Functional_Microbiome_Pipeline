@@ -38,7 +38,14 @@ read -rsp "Seqera token: " TOWER_ACCESS_TOKEN
 printf "\nexport TOWER_ACCESS_TOKEN='%s'\n" "$TOWER_ACCESS_TOKEN" >> .awsbatch.env
 ```
 
-The file is sourced automatically by `scripts/run_awsbatch_instant.sh`. If `scripts/setup_awsbatch_instant.sh` rewrites `.awsbatch.env`, it preserves existing `TOWER_ACCESS_TOKEN` and `TOWER_API_ENDPOINT` values.
+If your runs should appear in a shared Seqera workspace instead of your personal workspace, also save the workspace ID:
+
+```bash
+read -rp "Seqera workspace ID: " TOWER_WORKSPACE_ID
+printf "export TOWER_WORKSPACE_ID='%s'\n" "$TOWER_WORKSPACE_ID" >> .awsbatch.env
+```
+
+The file is sourced automatically by `scripts/run_awsbatch_instant.sh`. If `scripts/setup_awsbatch_instant.sh` rewrites `.awsbatch.env`, it preserves existing `TOWER_ACCESS_TOKEN`, `TOWER_API_ENDPOINT`, and `TOWER_WORKSPACE_ID` values.
 
 For a custom setup, pass options to the generic setup script:
 
@@ -150,6 +157,12 @@ bash scripts/run_awsbatch.sh \
 ```
 
 Without Fusion, make sure the AWS CLI is available to Batch jobs, either in the container images or in the AWS Batch host AMI. If it is installed at a custom path on the AMI, pass it with `--aws-cli-path` or `-AwsCliPath`.
+
+The instant launcher uses Fusion by default. If you want to submit to AWS Batch without Seqera Fusion, run:
+
+```bash
+NXF_USE_FUSION=false bash scripts/run_awsbatch_instant.sh
+```
 
 ## Manual Command
 

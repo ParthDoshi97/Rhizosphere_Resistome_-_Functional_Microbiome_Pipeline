@@ -72,6 +72,10 @@ $profile = if ($Spot -and $Fusion) {
     "awsbatch"
 }
 
+if ($Fusion -and -not $env:TOWER_ACCESS_TOKEN) {
+    throw "--fusion requires TOWER_ACCESS_TOKEN. Set TOWER_ACCESS_TOKEN before launching, or rerun without -Fusion. For shared Seqera workspaces, also set TOWER_WORKSPACE_ID."
+}
+
 $cmd = @("run", $Entry, "-profile", $profile, "-bucket-dir", $BucketDir)
 if (-not $NoResume) {
     $cmd += "-resume"

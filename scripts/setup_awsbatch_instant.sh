@@ -436,6 +436,7 @@ export AWS_PAGER=""
 IAM_CHANGED=0
 PRESERVED_TOWER_ACCESS_TOKEN="$(preserve_env_value TOWER_ACCESS_TOKEN)"
 PRESERVED_TOWER_API_ENDPOINT="$(preserve_env_value TOWER_API_ENDPOINT)"
+PRESERVED_TOWER_WORKSPACE_ID="$(preserve_env_value TOWER_WORKSPACE_ID)"
 
 log "Using fixed region: $REGION"
 ACCOUNT_ID="$(aws_cmd sts get-caller-identity --query Account --output text)"
@@ -613,6 +614,12 @@ fi
 if [[ -n "$PRESERVED_TOWER_API_ENDPOINT" ]]; then
     cat >> "$ENV_FILE" <<EOF
 export TOWER_API_ENDPOINT='$PRESERVED_TOWER_API_ENDPOINT'
+EOF
+fi
+
+if [[ -n "$PRESERVED_TOWER_WORKSPACE_ID" ]]; then
+    cat >> "$ENV_FILE" <<EOF
+export TOWER_WORKSPACE_ID='$PRESERVED_TOWER_WORKSPACE_ID'
 EOF
 fi
 

@@ -20,6 +20,33 @@ BUCKET_DIR="${NXF_AWS_WORKDIR:-s3://nf-pipeline-data/Data/PRJNA647806/nxf-work}"
 OUTDIR="${NXF_AWS_OUTDIR:-s3://nf-pipeline-data/Data/PRJNA647806/results}"
 INPUT="${NXF_AWS_INPUT:-s3://nf-pipeline-data/Data/sample_sheet.csv}"
 JOB_ROLE="${NXF_AWS_BATCH_JOB_ROLE:-}"
+USE_FUSION="${NXF_USE_FUSION:-true}"
+
+if [[ "$USE_FUSION" == "true" || "$USE_FUSION" == "1" || "$USE_FUSION" == "yes" ]]; then
+    if [[ -z "${TOWER_ACCESS_TOKEN:-}" ]]; then
+        cat >&2 <<'EOF'
+ERROR: Seqera Fusion is enabled, but TOWER_ACCESS_TOKEN is not set.
+
+Create a Seqera access token, then save it in .awsbatch.env:
+
+  read -rsp "Seqera token: " TOWER_ACCESS_TOKEN
+  printf "\nexport TOWER_ACCESS_TOKEN='%s'\n" "$TOWER_ACCESS_TOKEN" >> .awsbatch.env
+
+If you use a shared Seqera workspace, also add:
+
+  printf "export TOWER_WORKSPACE_ID='YOUR_WORKSPACE_ID'\n" >> .awsbatch.env
+
+Then rerun:
+
+  bash scripts/run_awsbatch_instant.sh
+
+To run AWS Batch without Seqera Fusion, use:
+
+  NXF_USE_FUSION=false bash scripts/run_awsbatch_instant.sh
+EOF
+        exit 1
+    fi
+fi
 
 if [[ -z "$JOB_ROLE" ]]; then
     if ! command -v aws >/dev/null 2>&1; then
@@ -31,13 +58,17 @@ if [[ -z "$JOB_ROLE" ]]; then
     JOB_ROLE="arn:aws:iam::${ACCOUNT_ID}:role/rhizo-batch-job-role"
 fi
 
-exec bash "$SCRIPT_DIR/run_awsbatch.sh" \
-    --input "$INPUT" \
-    --queue "$QUEUE" \
-    --bucket-dir "$BUCKET_DIR" \
-    --region "$REGION" \
-    --outdir "$OUTDIR" \
-    --job-role "$JOB_ROLE" \
-    --spot \
-    --fusion \
-    "$@"
+CMD=(bash "$SCRIPT_DIR/run_awsbatch.sh"
+    --input "$INPUT"
+    --queue "$QUEUE"
+    --bucket-dir "$BUCKET_DIR"
+    --region "$REGION"
+    --outdir "$OUTDIR"
+    --job-role "$JOB_ROLE"
+    --spot)
+
+if [[ "$USE_FUSION" == "true" || "$USE_FUSION" == "1" || "$USE_FUSION" == "yes" ]]; then
+    CMD+=(--fusion)
+fi
+
+exec "${CMD[@]}" "$@"
