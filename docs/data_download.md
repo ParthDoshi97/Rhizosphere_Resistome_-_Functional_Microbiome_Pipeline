@@ -183,7 +183,7 @@ Upload the generated sample sheet:
 
 ```bash
 aws s3 cp data/PRJNA647806/sample_sheet.csv \
-  s3://nf-pipeline-data/Data/PRJNA647806/sample_sheet.csv
+  s3://nf-pipeline-data/Data/sample_sheet.csv
 ```
 
 ## Useful Options

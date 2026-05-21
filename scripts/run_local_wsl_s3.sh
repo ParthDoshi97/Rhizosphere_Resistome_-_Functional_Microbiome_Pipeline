@@ -7,7 +7,7 @@ Usage:
   bash scripts/run_local_wsl_s3.sh [--input SAMPLE_SHEET] [--outdir s3://bucket/results] [options] [-- extra nextflow args]
 
 Options:
-  --input PATH           Sample sheet. Defaults to s3://nf-pipeline-data/Data/PRJNA647806/sample_sheet.csv.
+  --input PATH           Sample sheet. Defaults to s3://nf-pipeline-data/Data/sample_sheet.csv.
   --outdir s3://PATH     S3 results prefix. Defaults to s3://nf-pipeline-data/Data/PRJNA647806/results.
   --workdir PATH         Local WSL work directory. Defaults to /tmp/nxf-work.
   --region REGION        AWS region. Defaults to AWS_REGION, AWS_DEFAULT_REGION, or ap-south-1.
@@ -44,7 +44,7 @@ check_s3_bucket() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
-INPUT="${NXF_S3_INPUT:-s3://nf-pipeline-data/Data/PRJNA647806/sample_sheet.csv}"
+INPUT="${NXF_S3_INPUT:-s3://nf-pipeline-data/Data/sample_sheet.csv}"
 OUTDIR="${NXF_S3_OUTDIR:-s3://nf-pipeline-data/Data/PRJNA647806/results}"
 WORKDIR="${NXF_LOCAL_WORKDIR:-/tmp/nxf-work}"
 REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-ap-south-1}}"
