@@ -100,8 +100,8 @@ status = 'FAIL' if failures else 'PASS'
 
 tsv_path = Path(sample_id + '.assembly_stats.tsv')
 tsv_path.write_text(
-    'sample_id\ttotal_contigs\ttotal_bases_mbp\tn50\tn90\tlargest_contig\tcontigs_1kb\tcontigs_5kb\tcontigs_10kb\tmean_len\tstatus\n'
-    '{}\t{}\t{:.1f}\t{}\t{}\t{}\t{}\t{}\t{}\t{:.0f}\t{}\n'.format(
+    'sample_id\\ttotal_contigs\\ttotal_bases_mbp\\tn50\\tn90\\tlargest_contig\\tcontigs_1kb\\tcontigs_5kb\\tcontigs_10kb\\tmean_len\\tstatus\\n'
+    '{}\\t{}\\t{:.1f}\\t{}\\t{}\\t{}\\t{}\\t{}\\t{}\\t{:.0f}\\t{}\\n'.format(
         sample_id, total_contigs, total_bases_mbp, n50, n90,
         largest, contigs_1kb, contigs_5kb, contigs_10kb, mean_len, status
     )
@@ -111,9 +111,9 @@ summary = 'sample_id={}; total_bases_mbp={:.1f}; n50={}; contigs_1kb={}; total_c
     sample_id, total_bases_mbp, n50, contigs_1kb, total_contigs)
 
 if failures:
-    Path(sample_id + '.assembly_fail.txt').write_text('FAIL\n' + summary + '\n' + '\n'.join('- ' + f for f in failures) + '\n')
+    Path(sample_id + '.assembly_fail.txt').write_text('FAIL\\n' + summary + '\\n' + '\\n'.join('- ' + f for f in failures) + '\\n')
 else:
-    Path(sample_id + '.assembly_pass.txt').write_text('PASS\n' + summary + '\n')
+    Path(sample_id + '.assembly_pass.txt').write_text('PASS\\n' + summary + '\\n')
 PY
 
 cat > versions.yml <<END_VERSIONS
