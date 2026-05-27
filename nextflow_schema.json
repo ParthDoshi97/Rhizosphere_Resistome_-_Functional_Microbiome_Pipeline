@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://example.org/rhizosphere-resistome-functional-microbiome-pipeline.schema.json",
+  "title": "Rhizosphere Resistome Functional Microbiome Pipeline",
+  "description": "Parameters for the rhizosphere metagenome QC, assembly, protein assembly, and CoverM coverage workflow.",
+  "type": "object",
+  "definitions": {
+    "input_output_options": {
+      "title": "Input/output options",
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "description": "CSV samplesheet with sample, reads_r1, reads_r2, site, timepoint, replicate, batch, and exp_depth columns."
+        },
+        "outdir": {
+          "type": "string",
+          "description": "Output directory or cloud prefix for published results."
+        },
+        "publish_dir_mode": {
+          "type": "string",
+          "enum": ["copy", "symlink", "rellink", "link", "move"],
+          "description": "Nextflow publishDir mode."
+        }
+      },
+      "required": ["input"]
+    },
+    "skip_save_options": {
+      "title": "Skip and save options",
+      "type": "object",
+      "properties": {
+        "skip_multiqc": {
+          "type": "boolean",
+          "description": "Skip MultiQC report generation."
+        },
+        "skip_plass": {
+          "type": "boolean",
+          "description": "Skip Plass protein assembly."
+        },
+        "save_logs": {
+          "type": "boolean",
+          "description": "Publish tool log files."
+        },
+        "save_trimmed": {
+          "type": "boolean",
+          "description": "Publish trimmed fastp FASTQ files."
+        },
+        "save_bam": {
+          "type": "boolean",
+          "description": "Publish CoverM BAM and BAI files."
+        }
+      }
+    },
+    "fastp_options": {
+      "title": "fastp options",
+      "type": "object",
+      "properties": {
+        "fastp_min_reads": { "type": "integer", "minimum": 0 },
+        "fastp_min_bases_gbp": { "type": "number", "minimum": 0 },
+        "fastp_min_q30_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fastp_max_dup_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fastp_min_gc": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fastp_max_gc": { "type": "number", "minimum": 0, "maximum": 1 },
+        "fastp_depth_fraction": { "type": "number", "minimum": 0 },
+        "fastp_extra_args": { "type": "string" }
+      }
+    },
+    "assembly_options": {
+      "title": "Assembly options",
+      "type": "object",
+      "properties": {
+        "megahit_min_contig_len": { "type": "integer", "minimum": 1 },
+        "megahit_extra_args": { "type": "string" },
+        "assembly_min_bases_mbp": { "type": "number", "minimum": 0 },
+        "assembly_min_n50_bp": { "type": "integer", "minimum": 0 },
+        "assembly_min_contigs_1kb": { "type": "integer", "minimum": 0 },
+        "assembly_max_contigs": { "type": "integer", "minimum": 1 },
+        "plass_min_protein_len": { "type": "integer", "minimum": 1 },
+        "plass_extra_args": { "type": "string" }
+      }
+    },
+    "coverm_options": {
+      "title": "CoverM options",
+      "type": "object",
+      "properties": {
+        "coverm_min_identity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "coverm_min_aligned_len": { "type": "integer", "minimum": 1 },
+        "coverm_extra_args": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/definitions/input_output_options" },
+    { "$ref": "#/definitions/skip_save_options" },
+    { "$ref": "#/definitions/fastp_options" },
+    { "$ref": "#/definitions/assembly_options" },
+    { "$ref": "#/definitions/coverm_options" }
+  ]
+}

@@ -1,8 +1,10 @@
 nextflow.enable.dsl = 2
 
 process FASTP_QC_GATE {
+    tag "$meta.id"
     label 'process_single'
 
+    conda "${moduleDir}/environment.yml"
     container 'python:3.11'
 
     input:
@@ -11,6 +13,7 @@ process FASTP_QC_GATE {
     output:
     tuple val(meta), path(json), path("${meta.id}.qc_pass.txt"), emit: pass, optional: true
     tuple val(meta), path(json), path("${meta.id}.qc_fail.txt"), emit: fail, optional: true
+    path "versions.yml", emit: versions
 
     script:
     def meta_json = groovy.json.JsonOutput.toJson(meta)
@@ -25,6 +28,8 @@ process FASTP_QC_GATE {
     ])
 
     """
+set -euo pipefail
+
 cat > meta.json <<'END_META'
 ${meta_json}
 END_META
@@ -175,5 +180,10 @@ else:
     report_path = Path(sample_id + '.qc_pass.txt')
     report_path.write_text('PASS\\n' + metrics_summary + '\\n', encoding='utf-8')
 PY
+
+cat > versions.yml <<END_VERSIONS
+"${task.process}":
+    python: \$(python3 --version | sed 's/Python //')
+END_VERSIONS
     """
 }

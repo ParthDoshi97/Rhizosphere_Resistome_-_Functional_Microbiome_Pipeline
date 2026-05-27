@@ -1,0 +1,7 @@
+name: rhizo-fastp
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.11
+  - fastp=0.23.4

@@ -1,16 +1,11 @@
 nextflow.enable.dsl = 2
 
 process PLASS {
+    tag "$meta.id"
     label 'process_high_memory'
 
+    conda "${moduleDir}/environment.yml"
     container 'quay.io/biocontainers/plass:5.cf8933--hd6d6fdc_3'
-
-    publishDir path: "${params.outdir}/assembly/plass",
-        mode: 'copy',
-        pattern: "*.plass_proteins.faa"
-    publishDir path: "${params.outdir}/assembly/plass/logs",
-        mode: 'copy',
-        pattern: "*.plass.log"
 
     input:
     tuple val(meta), path(reads_r1), path(reads_r2)
@@ -21,7 +16,11 @@ process PLASS {
     path "versions.yml",                                    emit: versions
 
     script:
+    def args = task.ext.args ?: ''
+
     """
+set -euo pipefail
+
 # Handle multi-lane: concatenate if needed
 if [ \$(echo "${reads_r1}" | wc -w) -gt 1 ]; then
     cat ${reads_r1} > merged_R1.fastq.gz
@@ -41,6 +40,7 @@ plass assemble \\
     --threads ${task.cpus} \\
     --min-length ${params.plass_min_protein_len} \\
     --translation-table 11 \\
+    ${args} \\
     2>&1 | tee ${meta.id}.plass.log
 
 rm -rf tmp_${meta.id}

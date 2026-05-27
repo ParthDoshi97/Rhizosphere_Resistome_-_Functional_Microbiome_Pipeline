@@ -32,5 +32,5 @@ workflow COVERM_WF {
     merged_coverage     = COVERM_BATCH_MERGE.out.merged_coverage
     batch_bams          = ch_batch_bam
     batch_bais          = ch_batch_bai
-    versions            = COVERM_CONTIG.out.versions
+    versions            = COVERM_CONTIG.out.versions.mix(COVERM_BATCH_MERGE.out.versions)
 }

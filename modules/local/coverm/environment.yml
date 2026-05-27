@@ -1,0 +1,9 @@
+name: rhizo-coverm
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.11
+  - coverm=0.7.0
+  - samtools=1.20
+  - strobealign

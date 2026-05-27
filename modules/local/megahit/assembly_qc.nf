@@ -1,19 +1,20 @@
 nextflow.enable.dsl = 2
 
 process ASSEMBLY_QC {
+    tag "$meta.id"
     label 'process_single'
 
+    conda "${moduleDir}/environment.yml"
     container 'python:3.11'
-
-    publishDir "${params.outdir}/assembly/megahit/qc", mode: 'copy'
 
     input:
     tuple val(meta), path(contigs)
 
     output:
-    tuple val(meta), path(contigs), emit: pass, optional: true
-    tuple val(meta), path(contigs), emit: fail, optional: true
+    tuple val(meta), path(contigs), path("${meta.id}.assembly_pass.txt"), emit: pass, optional: true
+    tuple val(meta), path(contigs), path("${meta.id}.assembly_fail.txt"), emit: fail, optional: true
     tuple val(meta), path("${meta.id}.assembly_stats.tsv"), emit: stats
+    path "versions.yml", emit: versions
 
     script:
     def thresholds_json = groovy.json.JsonOutput.toJson([
@@ -25,6 +26,8 @@ process ASSEMBLY_QC {
     def meta_json = groovy.json.JsonOutput.toJson(meta)
 
     """
+set -euo pipefail
+
 cat > meta.json <<'END_META'
 ${meta_json}
 END_META
@@ -112,5 +115,10 @@ if failures:
 else:
     Path(sample_id + '.assembly_pass.txt').write_text('PASS\n' + summary + '\n')
 PY
+
+cat > versions.yml <<END_VERSIONS
+"${task.process}":
+    python: \$(python3 --version | sed 's/Python //')
+END_VERSIONS
     """
 }

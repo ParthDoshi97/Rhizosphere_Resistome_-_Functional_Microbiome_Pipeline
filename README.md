@@ -1,21 +1,20 @@
 # Rhizosphere Resistome Functional Microbiome Pipeline
 
-Nextflow DSL2 pipeline modules for rhizosphere shotgun metagenome QC and downstream resistome analysis.
+Nextflow DSL2 pipeline for rhizosphere shotgun metagenome QC, assembly, protein assembly, and contig coverage profiling.
 
-Current implemented stage:
+Implemented stages:
 
-- Stage 2 fastp QC, hard QC gating, and MultiQC reporting.
-- Assembly for QC-passing samples with MEGAHIT, assembly QC, and Plass protein assembly.
-- Stage 4 CoverM contig coverage profiling for SemiBin2 inputs and abundance summaries.
+- Samplesheet validation and normalization.
+- fastp read QC, trimming, hard QC gating, and MultiQC reporting.
+- MEGAHIT nucleotide assembly with assembly QC.
+- Optional Plass protein assembly.
+- CoverM contig coverage profiling for SemiBin2-style abundance inputs.
+- Pipeline metadata: execution trace, timeline, report, DAG, validation report, and software versions.
 
-Run locally or on AWS Batch from the top-level `main.nf` with a CSV sample sheet:
+Run from the top-level `main.nf` with a CSV samplesheet:
 
 ```bash
-nextflow run main.nf --input samples.csv
+nextflow run main.nf --input samples.csv --outdir results -profile docker
 ```
 
-WSL S3 storage runs are documented in `docs/wsl_s3.md`.
-
-AWS Batch, S3 work storage, Spot queues, and resume launchers are documented in `docs/aws_batch.md`.
-
-SRA/BioProject download helpers using `sracha` are documented in `docs/data_download.md`.
+See `docs/usage.md` for parameters and profiles, `docs/output.md` for the results layout, `docs/wsl_s3.md` for WSL + S3 runs, `docs/aws_batch.md` for AWS Batch, and `docs/data_download.md` for SRA/BioProject download helpers.

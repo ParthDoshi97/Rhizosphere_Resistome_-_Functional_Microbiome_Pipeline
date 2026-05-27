@@ -3,9 +3,8 @@ nextflow.enable.dsl = 2
 process MULTIQC {
     label 'process_single'
 
+    conda "${moduleDir}/environment.yml"
     container 'quay.io/biocontainers/multiqc:1.21--pyhdfd78af_0'
-
-    publishDir "${params.outdir}/multiqc", mode: 'copy'
 
     input:
     path collected_files
@@ -20,6 +19,8 @@ process MULTIQC {
 
     script:
     """
+set -euo pipefail
+
 find . -name "*.qc_fail.txt" -exec basename {} .qc_fail.txt \\; | sort > failed_samples.txt || true
 
 multiqc \\

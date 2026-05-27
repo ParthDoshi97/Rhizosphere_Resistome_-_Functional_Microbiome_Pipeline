@@ -52,7 +52,7 @@ workflow {
 
     // Assert all samples produce non-empty contigs
     ASSEMBLY_WF.out.contigs_pass
-        .map { meta, contigs ->
+        .map { meta, contigs, report ->
             assert file_size(contigs) > 0 : "Contigs file is empty for ${meta.id}"
             tuple(meta, contigs)
         }
@@ -124,8 +124,8 @@ workflow.onComplete {
     assert plass_dir.exists()   : 'Missing results/assembly/plass/'
 
     expected_samples.each { sample_id ->
-        def contigs = new File(megahit_dir, "${sample_id}/${sample_id}.contigs.fa")
-        def proteins = new File(plass_dir, "${sample_id}/${sample_id}.plass_proteins.faa")
+        def contigs = new File(megahit_dir, "${sample_id}.contigs.fa")
+        def proteins = new File(plass_dir, "${sample_id}.plass_proteins.faa")
         assert contigs.exists()  : "Missing contigs file for ${sample_id}"
         assert proteins.exists() : "Missing Plass proteins file for ${sample_id}"
     }

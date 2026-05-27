@@ -1,0 +1,7 @@
+name: rhizo-megahit
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.11
+  - megahit=1.2.9

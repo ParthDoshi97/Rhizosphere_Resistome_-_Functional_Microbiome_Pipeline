@@ -1,0 +1,6 @@
+name: rhizo-plass
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - plass=5.cf8933

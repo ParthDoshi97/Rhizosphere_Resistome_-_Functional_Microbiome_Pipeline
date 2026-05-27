@@ -1,11 +1,11 @@
 nextflow.enable.dsl = 2
 
 process FASTP {
+    tag "$meta.id"
     label 'process_medium'
 
+    conda "${moduleDir}/environment.yml"
     container 'quay.io/biocontainers/fastp:0.23.4--h5f740d0_0'
-
-    publishDir "${params.outdir}/fastp/logs", mode: 'copy', pattern: '*.fastp.stderr'
 
     input:
     tuple val(meta), path(reads_r1), path(reads_r2)
@@ -19,8 +19,11 @@ process FASTP {
     script:
     def r1_inputs = reads_r1 instanceof List ? reads_r1.collect { it.name }.join(',') : reads_r1.name
     def r2_inputs = reads_r2 instanceof List ? reads_r2.collect { it.name }.join(',') : reads_r2.name
+    def args = task.ext.args ?: ''
 
     """
+set -euo pipefail
+
 fastp \\
     --in1 '${r1_inputs}' \\
     --in2 '${r2_inputs}' \\
@@ -37,6 +40,7 @@ fastp \\
     --complexity_threshold 30 \\
     --correction \\
     --overlap_diff_percent_limit 10 \\
+    ${args} \\
     2> '${meta.id}.fastp.stderr'
 
 cat > versions.yml <<END_VERSIONS

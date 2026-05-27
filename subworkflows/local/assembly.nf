@@ -9,22 +9,29 @@ workflow ASSEMBLY_WF {
     ch_reads  // tuple val(meta), path(r1_list), path(r2_list)
 
     main:
-    // Both assembly processes launch simultaneously from the same channel.
-    // Neither waits for the other — they are completely independent.
+    // MEGAHIT is the required nucleotide assembly route.
     MEGAHIT(ch_reads)
-    PLASS(ch_reads)
 
     // Apply post-assembly QC gate to MEGAHIT contigs only.
-    // Plass proteins are not gated — partial protein catalogs are
-    // still useful for DRAM even if the nucleotide assembly is poor.
     ASSEMBLY_QC(MEGAHIT.out.contigs)
+
+    if (!params.skip_plass) {
+        PLASS(ch_reads)
+        ch_proteins = PLASS.out.proteins
+        ch_plass_log = PLASS.out.log
+        ch_versions = MEGAHIT.out.versions.mix(ASSEMBLY_QC.out.versions).mix(PLASS.out.versions)
+    } else {
+        ch_proteins = Channel.empty()
+        ch_plass_log = Channel.empty()
+        ch_versions = MEGAHIT.out.versions.mix(ASSEMBLY_QC.out.versions)
+    }
 
     emit:
     contigs_pass   = ASSEMBLY_QC.out.pass
     contigs_fail   = ASSEMBLY_QC.out.fail
     assembly_stats = ASSEMBLY_QC.out.stats
-    proteins       = PLASS.out.proteins
+    proteins       = ch_proteins
     megahit_log    = MEGAHIT.out.log
-    plass_log      = PLASS.out.log
-    versions       = MEGAHIT.out.versions.mix(PLASS.out.versions)
+    plass_log      = ch_plass_log
+    versions       = ch_versions
 }

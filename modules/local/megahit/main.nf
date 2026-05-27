@@ -1,16 +1,11 @@
 nextflow.enable.dsl = 2
 
 process MEGAHIT {
+    tag "$meta.id"
     label 'process_high'
 
+    conda "${moduleDir}/environment.yml"
     container 'quay.io/biocontainers/megahit:1.2.9--h5b5514e_3'
-
-    publishDir path: "${params.outdir}/assembly/megahit",
-        mode: 'copy',
-        pattern: "*.contigs.fa"
-    publishDir path: "${params.outdir}/assembly/megahit/logs",
-        mode: 'copy',
-        pattern: "*.megahit.log"
 
     input:
     tuple val(meta), path(reads_r1), path(reads_r2)
@@ -24,8 +19,11 @@ process MEGAHIT {
     script:
     def r1_inputs = reads_r1 instanceof List ? reads_r1.collect { it.name }.join(',') : reads_r1.name
     def r2_inputs = reads_r2 instanceof List ? reads_r2.collect { it.name }.join(',') : reads_r2.name
+    def args = task.ext.args ?: ''
 
     """
+set -euo pipefail
+
 # Check if a partial assembly exists (Spot resume scenario)
 if [ -d "${meta.id}" ] && [ -f "${meta.id}/checkpoints.txt" ]; then
     CONTINUE_FLAG="--continue"
@@ -41,6 +39,7 @@ megahit \\
     --num-cpu-threads ${task.cpus} \\
     --memory ${task.memory.toBytes()} \\
     -o ${meta.id} \\
+    ${args} \\
     \${CONTINUE_FLAG} \\
     2>&1 | tee ${meta.id}.megahit.log
 

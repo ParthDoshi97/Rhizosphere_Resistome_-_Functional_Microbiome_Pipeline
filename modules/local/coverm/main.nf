@@ -1,26 +1,11 @@
 nextflow.enable.dsl = 2
 
 process COVERM_CONTIG {
+    tag "$meta.id"
     label 'process_medium'
 
+    conda "${moduleDir}/environment.yml"
     container 'quay.io/biocontainers/coverm:0.7.0--h9ee0642_1'
-
-    publishDir [
-        path: "${params.outdir}/coverage",
-        mode: 'copy',
-        pattern: "*_coverage.tsv"
-    ],
-    [
-        path: "${params.outdir}/coverage/logs",
-        mode: 'copy',
-        pattern: "*.coverm.log"
-    ],
-    [
-        path: "${params.outdir}/coverage/bam",
-        mode: 'copy',
-        pattern: "*_bam/*",
-        enabled: params.save_bam
-    ]
 
     input:
     tuple val(meta), path(contigs), path(reads_r1), path(reads_r2)
@@ -35,6 +20,7 @@ process COVERM_CONTIG {
     script:
     def r1_inputs = reads_r1 instanceof List ? reads_r1.collect { it.name }.join(' ') : reads_r1.name
     def r2_inputs = reads_r2 instanceof List ? reads_r2.collect { it.name }.join(' ') : reads_r2.name
+    def args = task.ext.args ?: ''
 
     """
 set -euo pipefail
@@ -53,6 +39,7 @@ coverm contig \\
     --min-read-percent-identity ${params.coverm_min_identity} \\
     --min-read-aligned-length ${params.coverm_min_aligned_len} \\
     --proper-pairs-only \\
+    ${args} \\
     --output-file ${meta.id}_coverage.tsv \\
     --bam-file-cache-directory ${meta.id}_bam/ \\
     2>&1 | tee ${meta.id}.coverm.log
