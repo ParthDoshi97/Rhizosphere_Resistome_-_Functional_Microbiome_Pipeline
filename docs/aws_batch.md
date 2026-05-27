@@ -38,6 +38,16 @@ read -rsp "Seqera token: " TOWER_ACCESS_TOKEN
 printf "\nexport TOWER_ACCESS_TOKEN='%s'\n" "$TOWER_ACCESS_TOKEN" >> .awsbatch.env
 ```
 
+You can also start from the tracked template and fill in the secret locally:
+
+```bash
+cp .awsbatch.env.example .awsbatch.env
+nano .awsbatch.env
+source .awsbatch.env
+```
+
+`.awsbatch.env` is intentionally ignored by Git because it can contain live Seqera and AWS settings. Do not commit it to the repository.
+
 If your runs should appear in a shared Seqera workspace instead of your personal workspace, also save the workspace ID:
 
 ```bash
