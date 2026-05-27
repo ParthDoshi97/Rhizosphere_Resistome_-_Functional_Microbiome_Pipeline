@@ -19,7 +19,10 @@ workflow RHIZOSPHERE_RESISTOME_WF {
     ch_sample_sheet
 
     main:
-    VALIDATE_SAMPLESHEET(ch_sample_sheet)
+    VALIDATE_SAMPLESHEET(
+        ch_sample_sheet,
+        file("${projectDir}/bin/validate_samplesheet.py")
+    )
 
     VALIDATE_SAMPLESHEET.out.validated_csv
         .splitCsv(header: true)

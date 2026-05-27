@@ -22,7 +22,10 @@ workflow COVERM_WF {
         .map { meta, bai -> tuple(meta.batch ?: 'default', bai) }
         .groupTuple(by: 0)
 
-    COVERM_BATCH_MERGE(ch_batch_coverage)
+    COVERM_BATCH_MERGE(
+        ch_batch_coverage,
+        file("${projectDir}/bin/merge_coverm_metabat.py")
+    )
 
     emit:
     coverage_per_sample = COVERM_CONTIG.out.coverage

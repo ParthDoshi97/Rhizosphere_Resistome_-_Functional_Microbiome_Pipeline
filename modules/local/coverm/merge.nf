@@ -9,6 +9,7 @@ process COVERM_BATCH_MERGE {
 
     input:
     tuple val(batch_id), path(coverage_tsvs)
+    path merge_script
 
     output:
     tuple val(batch_id), path("${batch_id}_merged_coverage.tsv"), emit: merged_coverage
@@ -18,7 +19,7 @@ process COVERM_BATCH_MERGE {
     """
 set -euo pipefail
 
-python3 ${projectDir}/bin/merge_coverm_metabat.py \\
+python3 ${merge_script} \\
     ${coverage_tsvs} \\
     > ${batch_id}_merged_coverage.tsv
 

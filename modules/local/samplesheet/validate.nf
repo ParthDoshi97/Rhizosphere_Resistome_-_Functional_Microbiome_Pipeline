@@ -9,6 +9,7 @@ process VALIDATE_SAMPLESHEET {
 
     input:
     path sample_sheet
+    path validator_script
 
     output:
     path "samplesheet.valid.csv",       emit: validated_csv
@@ -19,7 +20,7 @@ process VALIDATE_SAMPLESHEET {
     """
 set -euo pipefail
 
-python3 ${projectDir}/bin/validate_samplesheet.py \\
+python3 ${validator_script} \\
     --input ${sample_sheet} \\
     --output samplesheet.valid.csv \\
     --report samplesheet.validation.json
