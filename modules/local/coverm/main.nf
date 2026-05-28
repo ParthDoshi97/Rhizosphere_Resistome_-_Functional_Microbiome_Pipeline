@@ -34,7 +34,7 @@ coverm contig \\
     --coupled \${R1_FILES} \${R2_FILES} \\
     --reference ${contigs} \\
     --mapper strobealign \\
-    --methods metabat mean covered_fraction \\
+    --methods metabat \\
     --threads ${task.cpus} \\
     --min-read-percent-identity ${params.coverm_min_identity} \\
     --min-read-aligned-length ${params.coverm_min_aligned_len} \\

@@ -99,20 +99,20 @@ workflow {
             assert file_size(coverage) > 0 : "Coverage TSV is empty for ${meta.id}"
             def rows = coverage.readLines().findAll { it.trim() && !it.startsWith('contigName') }
             def header = coverage.readLines().first().split('\t')
-            def mean_idx = header.findIndexOf { it.toLowerCase().contains('mean') }
-            def covered_idx = header.findIndexOf { it.toLowerCase().contains('covered') }
+            def depth_idx = header.findIndexOf { it.endsWith('.bam') }
+            def variance_idx = header.findIndexOf { it.endsWith('.bam-var') }
             def first = rows ? rows.first().split('\t') : []
             [
                 meta.id,
                 rows.size(),
-                mean_idx >= 0 && first.size() > mean_idx ? first[mean_idx] : 'NA',
-                covered_idx >= 0 && first.size() > covered_idx ? first[covered_idx] : 'NA'
+                depth_idx >= 0 && first.size() > depth_idx ? first[depth_idx] : 'NA',
+                variance_idx >= 0 && first.size() > variance_idx ? first[variance_idx] : 'NA'
             ].join(',')
         }
         .collect()
         .view { rows ->
             assert rows.size() == expected_samples.size() : "Expected ${expected_samples.size()} coverage TSVs, got ${rows.size()}"
-            (['sample_id,contig_count,mean_depth,covered_fraction'] + rows.sort()).join('\n')
+            (['sample_id,contig_count,metabat_depth,metabat_variance'] + rows.sort()).join('\n')
         }
 
     COVERM_WF.out.bam
