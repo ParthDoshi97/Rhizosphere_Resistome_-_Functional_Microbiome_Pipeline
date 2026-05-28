@@ -52,6 +52,7 @@ The validator normalizes aliases, checks duplicate sample IDs, validates lane co
 | `awsbatch_spot` | AWS Batch Spot execution with reclaim retries. |
 | `awsbatch_fusion` | AWS Batch with Wave and Fusion. |
 | `awsbatch_spot_fusion` | AWS Batch Spot with Wave and Fusion. |
+| `smoke` | Relaxed assembly QC thresholds so small test assemblies can continue to CoverM. |
 | `test` | Small smoke-test settings and relaxed QC thresholds. |
 | `test_full` | Project sample sheet with normal QC thresholds. |
 
@@ -59,6 +60,21 @@ Profiles can be combined:
 
 ```bash
 nextflow run main.nf --input samples.csv --outdir results -profile test,docker
+```
+
+For AWS Batch smoke testing with the launcher, use `--smoke`:
+
+```bash
+bash scripts/run_awsbatch.sh \
+  --input s3://nf-pipeline-data/Data/sample_sheet.csv \
+  --queue rhizo-spot-queue \
+  --bucket-dir s3://nf-pipeline-data/Data/PRJNA647806/nxf-work-smoke \
+  --region ap-south-1 \
+  --outdir s3://nf-pipeline-data/Data/PRJNA647806/results_smoke \
+  --spot \
+  --fusion \
+  --smoke \
+  --no-resume
 ```
 
 ## Common Parameters

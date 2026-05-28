@@ -16,6 +16,7 @@ Options:
   --execution-role ROLE    IAM execution role ARN/name for Batch jobs.
   --spot                   Use the awsbatch_spot profile.
   --fusion                 Use Wave + Fusion profiles for S3 access.
+  --smoke                  Add the smoke profile with relaxed assembly QC thresholds.
   --spot-attempts N        Spot reclaim retry attempts. Defaults to 5 with --spot, otherwise 0.
   --no-resume              Do not pass -resume.
   -h, --help               Show this help.
@@ -34,6 +35,7 @@ JOB_ROLE=""
 EXECUTION_ROLE=""
 SPOT=0
 FUSION=0
+SMOKE=0
 SPOT_ATTEMPTS=""
 RESUME=1
 EXTRA_ARGS=()
@@ -52,6 +54,7 @@ while [[ $# -gt 0 ]]; do
         --execution-role) EXECUTION_ROLE="$2"; shift 2 ;;
         --spot) SPOT=1; shift ;;
         --fusion) FUSION=1; shift ;;
+        --smoke) SMOKE=1; shift ;;
         --spot-attempts) SPOT_ATTEMPTS="$2"; shift 2 ;;
         --no-resume) RESUME=0; shift ;;
         -h|--help) usage; exit 0 ;;
@@ -116,6 +119,10 @@ elif [[ "$FUSION" -eq 1 ]]; then
     PROFILE="awsbatch_fusion"
 else
     PROFILE="awsbatch"
+fi
+
+if [[ "$SMOKE" -eq 1 ]]; then
+    PROFILE="${PROFILE},smoke"
 fi
 
 if [[ "$FUSION" -eq 1 && -z "${TOWER_ACCESS_TOKEN:-}" ]]; then

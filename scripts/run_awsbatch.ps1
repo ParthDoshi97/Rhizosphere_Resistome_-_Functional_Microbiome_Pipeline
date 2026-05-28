@@ -17,6 +17,7 @@ param(
     [string]$ExecutionRole = "",
     [switch]$Spot,
     [switch]$Fusion,
+    [switch]$Smoke,
     [int]$SpotAttempts = -1,
     [switch]$NoResume,
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -70,6 +71,10 @@ $profile = if ($Spot -and $Fusion) {
     "awsbatch_fusion"
 } else {
     "awsbatch"
+}
+
+if ($Smoke) {
+    $profile = "$profile,smoke"
 }
 
 if ($Fusion -and -not $env:TOWER_ACCESS_TOKEN) {

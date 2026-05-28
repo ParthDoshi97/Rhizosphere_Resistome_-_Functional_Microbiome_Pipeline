@@ -174,6 +174,12 @@ The instant launcher uses Fusion by default. If you want to submit to AWS Batch 
 NXF_USE_FUSION=false bash scripts/run_awsbatch_instant.sh
 ```
 
+For small smoke-test datasets, add `--smoke` to relax assembly QC thresholds so CoverM receives contigs:
+
+```bash
+bash scripts/run_awsbatch_instant.sh --smoke
+```
+
 ## Manual Command
 
 The launch scripts expand to this general command:
