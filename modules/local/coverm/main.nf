@@ -5,7 +5,7 @@ process COVERM_CONTIG {
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
-    container 'quay.io/biocontainers/coverm:0.7.0--h9ee0642_1'
+    container 'quay.io/biocontainers/coverm:0.7.0--hcb7b614_4'
 
     input:
     tuple val(meta), path(contigs), path(reads_r1), path(reads_r2)
